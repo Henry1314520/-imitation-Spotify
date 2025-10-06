@@ -4,9 +4,8 @@
 
  My spotify
  
-<img src="Screenshot_20251006_183135.jpg" alt="Logo" width="100"/>
-<img src="Screenshot_20251006_183447.jpg" alt="Logo" width="100"/>
-<img src="Screenshot_20251006_183455.jpg" alt="Logo" width="100"/>
-
+<img src="Screenshot_20251006_183135.jpg" alt="Logo" width="100"/><img src="Screenshot_20251006_183447.jpg" alt="Logo" width="100"/><img src="Screenshot_20251006_183455.jpg" alt="Logo" width="100"/>
 
 imitation spotify
+
+<img src="Screenshot_20251006_183455.jpg" alt="Logo" width="100"/>
