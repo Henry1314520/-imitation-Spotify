@@ -4,8 +4,8 @@
 
  My spotify
  
-<img src="Screenshot_20251006_183135.jpg" alt="Logo" width="100"/><img src="Screenshot_20251006_183447.jpg" alt="Logo" width="100"/><img src="Screenshot_20251006_183455.jpg" alt="Logo" width="100"/>
+<img src="Screenshot_20251006_183135.jpg" alt="Logo" width="100"/> <img src="Screenshot_20251006_183447.jpg" alt="Logo" width="100"/> <img src="Screenshot_20251006_183455.jpg" alt="Logo" width="100"/>
 
 imitation spotify
 
-<img src="Screenshot_20251006_183455.jpg" alt="Logo" width="100"/>
+<img src="Simulator Screenshot - iPhone 16 Pro - 2025-10-07 at 01.30.22.png" alt="Logo" width="100"/> <img src="Simulator Screenshot - iPhone 16 Pro - 2025-10-07 at 01.30.30.png" alt="Logo" width="100"/> <img src="Simulator Screenshot - iPhone 16 Pro - 2025-10-07 at 01.30.38.png" alt="Logo" width="100"/> <img src="Simulator Screenshot - iPhone 16 Pro - 2025-10-07 at 01.30.41.png" alt="Logo" width="100"/>
