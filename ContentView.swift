@@ -4,6 +4,9 @@
 //
 
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // MARK: - Main App Entry with Splash Screen
 
@@ -181,15 +184,61 @@ struct MainAppView: View {
 struct HomeView: View {
     let playlists: [Playlist]
     let onPlayTrack: (Track) -> Void
+    @State private var selectedCategory = "所有"
+    
+    private let categories = ["所有", "音樂", "Podcast"]
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Greeting
-                Text(greeting())
-                    .font(.largeTitle).bold()
+                // Greeting + Category buttons
+                VStack(alignment: .leading, spacing: 10) {
+                    /*HStack {
+                        Text(greeting())
+                            .font(.largeTitle).bold()
+                        
+                        Spacer()
+                    }
                     .padding(.horizontal)
-                    .padding(.top, 8)
+                    .padding(.top, 8)*/
+                    
+                    // Spotify-style category buttons + avatar
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            // 🟢 小圓形頭像（可換成你的圖片）
+                            Image("me")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 36, height: 36)
+                                .clipShape(Circle()) //
+                                .foregroundColor(.white)
+                                .padding(.leading, 8)
+                            
+                            // 類別按鈕
+                            ForEach(categories, id: \.self) { category in
+                                Button(action: {
+                                    selectedCategory = category
+                                }) {
+                                    Text(category)
+                                        .font(.subheadline)
+                                        .fontWeight(selectedCategory == category ? .semibold : .regular)
+                                        .foregroundColor(
+                                            selectedCategory == category ? .black : .white
+                                        )
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            selectedCategory == category
+                                                ? Color(hex: "#1DB954")
+                                                : Color(white: 0.2)
+                                        )
+                                        .cornerRadius(20)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
                 
                 // Quick access grid (2x3)
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
@@ -246,18 +295,20 @@ struct HomeView: View {
                 Spacer(minLength: 100)
             }
         }
-        .background(Color.black)
+        .background(Color.black.ignoresSafeArea())
     }
     
-    private func greeting() -> String {
+    /*private func greeting() -> String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
         case 5..<12: return "早安"
         case 12..<18: return "午安"
         default: return "晚安"
         }
-    }
+    }time detect*/
 }
+
+
 
 struct QuickAccessCard: View {
     let playlist: Playlist
@@ -266,7 +317,7 @@ struct QuickAccessCard: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 0) {
-                ArtworkView(color: playlist.artworkColor)
+                ArtworkView(imageName: playlist.artworkImageName, color: playlist.artworkColor)
                     .frame(width: 54, height: 54)
                 
                 Text(playlist.name)
@@ -293,7 +344,7 @@ struct PlaylistCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 8) {
-                ArtworkView(color: playlist.artworkColor)
+                ArtworkView(imageName: playlist.artworkImageName, color: playlist.artworkColor)
                     .frame(width: 140, height: 140)
                     .cornerRadius(4)
                 
@@ -442,7 +493,7 @@ struct LibraryView: View {
                                 }
                             } label: {
                                 HStack(spacing: 12) {
-                                    ArtworkView(color: pl.artworkColor)
+                                    ArtworkView(imageName: pl.artworkImageName, color: pl.artworkColor)
                                         .frame(width: 64, height: 64)
                                         .cornerRadius(4)
                                     
@@ -513,7 +564,7 @@ struct MiniPlayerView: View {
             .frame(height: 2)
             
             HStack(spacing: 12) {
-                ArtworkView(color: track.color)
+                ArtworkView(imageName: track.artworkImageName, color: track.color)
                     .frame(width: 48, height: 48)
                     .cornerRadius(4)
                 
@@ -605,7 +656,7 @@ struct NowPlayingView: View {
                 Spacer()
                 
                 // Artwork
-                ArtworkView(color: track.color)
+                ArtworkView(imageName: track.artworkImageName, color: track.color)
                     .frame(width: 340, height: 340)
                     .cornerRadius(8)
                     .shadow(color: .black.opacity(0.5), radius: 20, y: 10)
@@ -734,24 +785,42 @@ struct NowPlayingView: View {
 // MARK: - Artwork View
 
 struct ArtworkView: View {
+    let imageName: String?
     let color: Color
     
     var body: some View {
         ZStack {
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [color, color.opacity(0.6)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+            if let imageName,
+               !imageName.isEmpty,
+               let uiImage = loadUIImage(named: imageName) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .clipped()
+            } else {
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [color, color.opacity(0.6)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-            
-            Image(systemName: "music.note")
-                .font(.system(size: 60))
-                .foregroundColor(.white.opacity(0.5))
+                
+                Image(systemName: "music.note")
+                    .font(.system(size: 60))
+                    .foregroundColor(.white.opacity(0.5))
+            }
         }
     }
+    
+    #if canImport(UIKit)
+    private func loadUIImage(named: String) -> UIImage? {
+        UIImage(named: named)
+    }
+    #else
+    private func loadUIImage(named: String) -> Any? { nil }
+    #endif
 }
 
 // MARK: - Models
@@ -761,6 +830,7 @@ struct Track: Identifiable, Equatable, Hashable {
     let title: String
     let artist: String
     let color: Color
+    let artworkImageName: String? // 放你的圖片名稱（Assets 中）
 }
 
 struct Playlist: Identifiable, Hashable {
@@ -769,6 +839,7 @@ struct Playlist: Identifiable, Hashable {
     let subtitle: String
     let artworkColor: Color
     let tracks: [Track]
+    let artworkImageName: String? // 放你的圖片名稱（Assets 中）
 }
 
 struct GenreTile: Identifiable {
@@ -779,25 +850,25 @@ struct GenreTile: Identifiable {
 
 enum SampleData {
     static let tracks: [Track] = [
-        Track(title: "Blinding Lights", artist: "The Weeknd", color: Color(hex: "#8B4789")),
-        Track(title: "Levitating", artist: "Dua Lipa", color: Color(hex: "#E13300")),
-        Track(title: "Save Your Tears", artist: "The Weeknd", color: Color(hex: "#D84000")),
-        Track(title: "Good 4 U", artist: "Olivia Rodrigo", color: Color(hex: "#8D67AB")),
-        Track(title: "Heat Waves", artist: "Glass Animals", color: Color(hex: "#5F8D4E")),
-        Track(title: "Peaches", artist: "Justin Bieber", color: Color(hex: "#FF8C42")),
-        Track(title: "Stay", artist: "The Kid LAROI", color: Color(hex: "#5C469C")),
-        Track(title: "Butter", artist: "BTS", color: Color(hex: "#FFD23F"))
+        Track(title: "Blinding Lights", artist: "The Weeknd", color: Color(hex: "#8B4789"), artworkImageName: "tears"),
+        Track(title: "Levitating", artist: "Dua Lipa", color: Color(hex: "#E13300"), artworkImageName: "dua"),
+        Track(title: "Save Your Tears", artist: "The Weeknd", color: Color(hex: "#D84000"), artworkImageName: "tears"),
+        Track(title: "Good 4 U", artist: "Olivia Rodrigo", color: Color(hex: "#8D67AB"), artworkImageName: "good4u"),
+        Track(title: "Heat Waves", artist: "Glass Animals", color: Color(hex: "#5F8D4E"), artworkImageName: "heatwave"),
+        Track(title: "Peaches", artist: "Justin Bieber", color: Color(hex: "#FF8C42"), artworkImageName: "justin"),
+        Track(title: "Stay", artist: "The Kid LAROI", color: Color(hex: "#5C469C"), artworkImageName: "kid"),
+        Track(title: "Butter", artist: "BTS", color: Color(hex: "#FFD23F"), artworkImageName: "bts")
     ]
     
     static let playlists: [Playlist] = [
-        Playlist(name: "Daily Mix 1", subtitle: "The Weeknd、Post Malone 等", artworkColor: Color(hex: "#8B4789"), tracks: Array(tracks.shuffled().prefix(6))),
-        Playlist(name: "Daily Mix 2", subtitle: "Dua Lipa、Ariana Grande 等", artworkColor: Color(hex: "#E13300"), tracks: Array(tracks.shuffled().prefix(6))),
-        Playlist(name: "Daily Mix 3", subtitle: "Ed Sheeran、Shawn Mendes 等", artworkColor: Color(hex: "#5F8D4E"), tracks: Array(tracks.shuffled().prefix(6))),
-        Playlist(name: "熱門排行榜", subtitle: "台灣熱門歌曲", artworkColor: Color(hex: "#1DB954"), tracks: Array(tracks.shuffled().prefix(6))),
-        Playlist(name: "放鬆時光", subtitle: "輕鬆聆聽", artworkColor: Color(hex: "#5C469C"), tracks: Array(tracks.shuffled().prefix(6))),
-        Playlist(name: "專注工作", subtitle: "提升專注力", artworkColor: Color(hex: "#2E86AB"), tracks: Array(tracks.shuffled().prefix(6))),
-        Playlist(name: "健身動力", subtitle: "運動必備", artworkColor: Color(hex: "#D84000"), tracks: Array(tracks.shuffled().prefix(6))),
-        Playlist(name: "夜晚情歌", subtitle: "浪漫夜晚", artworkColor: Color(hex: "#8D67AB"), tracks: Array(tracks.shuffled().prefix(6)))
+        Playlist(name: "不講武德系列", subtitle: "The Weeknd、Post Malone 等", artworkColor: Color(hex: "#8B4789"), tracks: Array(tracks.shuffled().prefix(6)), artworkImageName: "kongming"),
+        Playlist(name: "Daily Mix 2", subtitle: "Aespa, ILLIT, New Jeans 等", artworkColor: Color(hex: "#E13300"), tracks: Array(tracks.shuffled().prefix(6)), artworkImageName: "aespa"),
+        Playlist(name: "Daily Mix 3", subtitle: "Ed Sheeran、Shawn Mendes 等", artworkColor: Color(hex: "#5F8D4E"), tracks: Array(tracks.shuffled().prefix(6)), artworkImageName: "edsheeran"),
+        Playlist(name: "Top 50 songs", subtitle: "The hotest hits with Charlie path, Kelly Clarkson, Ariana Grande 等", artworkColor: Color(hex: "#1DB954"), tracks: Array(tracks.shuffled().prefix(6)), artworkImageName: "ariana"),
+        Playlist(name: "Relax time", subtitle: "Katy Perry, Maroon 5, Dua Lipa 等", artworkColor: Color(hex: "#5C469C"), tracks: Array(tracks.shuffled().prefix(6)), artworkImageName: "run"),
+        Playlist(name: "Focus", subtitle: "Radwimps, LISA, The Chainsmokers 等", artworkColor: Color(hex: "#2E86AB"), tracks: Array(tracks.shuffled().prefix(6)), artworkImageName: "lisa"),
+        Playlist(name: "GYM", subtitle: "ILLIT, Daniel Powter, Halsey, Shawn Mendes 等", artworkColor: Color(hex: "#D84000"), tracks: Array(tracks.shuffled().prefix(6)), artworkImageName: "ILLIT"),
+        Playlist(name: "Love", subtitle: "Eason One Republic, Taylor Swift, Sia等", artworkColor: Color(hex: "#8D67AB"), tracks: Array(tracks.shuffled().prefix(6)), artworkImageName: "eason")
     ]
     
     static let genres: [GenreTile] = [
